@@ -1,6 +1,8 @@
 import { useEffect, useState } from 'react';
 import { CardsHolder } from './CardsHolder.jsx';
 import { Scores } from './Scores.jsx';
+import { Header } from './Header.jsx';
+import { DifficultySelector } from './DifficultySelector.jsx';
 
 export function Main() {
     const [images, setImages] = useState(() => {
@@ -106,6 +108,8 @@ export function Main() {
 
     return (
         <div id="main" className="main">
+            <Header />
+            <DifficultySelector />
             <Scores currentScore={currentScore} bestScore={bestScore} />
             <CardsHolder images={images} onImageClick={handleImgClick} />
         </div>
