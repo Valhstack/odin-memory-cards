@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { CardsHolder } from './CardsHolder.jsx';
+import { Scores } from './Scores.jsx';
 
 export function Main() {
     const [images, setImages] = useState(() => {
@@ -15,15 +16,17 @@ export function Main() {
         return bestUsersScore ? JSON.parse(bestUsersScore) : 0;
     });
 
+    const max = 9;
+
     useEffect(() => {
-        if (images.length >= 9) return;
+        if (images.length >= max) return;
 
         const fetchImages = async () => {
             let collectedImages = [];
 
-            while (collectedImages.length < 9) {
+            while (collectedImages.length < max) {
                 const response = await fetch(
-                    'https://api.thecatapi.com/v1/images/search?limit=9&breed_ids=siam,beng,mcoo,rblu&size=full'
+                    `https://api.thecatapi.com/v1/images/search?limit=${max}&breed_ids=siam,beng,mcoo,rblu&size=full`
                 );
 
                 const data = await response.json();
@@ -68,23 +71,32 @@ export function Main() {
         console.log('Img ID: ' + e.target.dataset.id + ' is clicked');
         if (clickedImages.some(img => img.id === e.target.dataset.id)) {
             if (currentScore > bestScore) {
-                setCurrentScore(0);
                 setBestScore(currentScore);
                 localStorage.setItem('best-score', JSON.stringify(currentScore));
-
-                const storedImages = sessionStorage.getItem('cat-images');
-                setImages(JSON.parse(storedImages));
             }
+
+            setCurrentScore(0);
+            const storedImages = sessionStorage.getItem('cat-images');
+            setImages(JSON.parse(storedImages));
+            setClickedImages([]);
         }
         else {
-            setClickedImages(prev => [
-                ...prev,
-                images.find(image => image.id === e.target.dataset.id)
-            ]);
+            if (currentScore === max) {
+                setCurrentScore(0);
+                const storedImages = sessionStorage.getItem('cat-images');
+                setImages(JSON.parse(storedImages));
+                setClickedImages([]);
+            }
+            else {
+                setClickedImages(prev => [
+                    ...prev,
+                    images.find(image => image.id === e.target.dataset.id)
+                ]);
 
-            setImages(shuffleArray(images));
+                setImages(shuffleArray(images));
 
-            setCurrentScore(prevScore => prevScore + 1);
+                setCurrentScore(prevScore => prevScore + 1);
+            }
         }
 
         console.log(currentScore);
@@ -94,6 +106,7 @@ export function Main() {
 
     return (
         <div id="main" className="main">
+            <Scores currentScore={currentScore} bestScore={bestScore} />
             <CardsHolder images={images} onImageClick={handleImgClick} />
         </div>
     );
